@@ -262,3 +262,21 @@ h1, h2, h3, a, strong {
     color: #b0b0b0;
     font-size: 0.9em;
 }
+
+/* Ефект розкриття пароля при наведенні мишки */
+.password-hover-zone:hover .stars {
+    display: none !important;
+}
+
+.password-hover-zone:hover .real-password {
+    display: inline !important;
+}
+
+/* Невелике підсвічування коду логіна для краси */
+code {
+    background-color: #f4f4f4;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: monospace;
+    font-weight: bold;
+}
