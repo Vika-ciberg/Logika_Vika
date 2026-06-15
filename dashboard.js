@@ -578,4 +578,47 @@ document.getElementById('addGroupForm').addEventListener('submit', async (e) => 
     }
 });
 
+const modalTeacher = document.getElementById('addTeacherModal');
+
+window.openAddTeacherModal = function() { 
+    modalTeacher.style.display = 'flex'; 
+};
+
+window.closeAddTeacherModal = function() { 
+    modalTeacher.style.display = 'none'; 
+    document.getElementById('addTeacherForm').reset(); 
+};
+
+// Відправка даних нової форми на сервер
+document.getElementById('addTeacherForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const newTeacher = {
+        full_name: document.getElementById('teacherName').value.trim(),
+        login: document.getElementById('teacherLogin').value.trim(),
+        password: document.getElementById('teacherPassword').value
+    };
+    
+    try {
+        const response = await fetch('/api/teachers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newTeacher)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            closeAddTeacherModal();
+            alert(result.message);
+            // Якщо на сторінці є функція оновлення списку викладачів у випадаючих списках, викликаємо її:
+            if (typeof loadTeachersToSelect === 'function') loadTeachersToSelect();
+        } else {
+            alert('Помилка: ' + result.error);
+        }
+    } catch (error) { 
+        alert('Помилка підключення до сервера'); 
+    }
+});
+
 loadStudents();
