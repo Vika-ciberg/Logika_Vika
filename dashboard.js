@@ -424,13 +424,18 @@ async function openLessonDetails(lessonId, groupName) {
         let html = `<button class="btn-secondary mb-20" onclick="loadSchedule()">⬅ Назад</button>`;
         if (students.length === 0) return contentArea.innerHTML = html + '<p>Немає учнів.</p>';
 
-        html += `<table class="data-table"><thead><tr><th>ПІБ</th><th>Присутність</th><th>Логіки</th><th>Дія</th></tr></thead><tbody>`;
+        html += `<table class="data-table"><thead><tr><th>ПІБ</th><th>Присутність</th><th>Логіки</th><th>Дія</th><th>ДЗ</th></tr></thead><tbody>`;
         students.forEach(s => {
+            // Якщо учень здав посилання — малюємо зелену кнопку, якщо ні — пишемо "Не здано"
+            const homeworkMarkup = s.homework_url 
+                ? `<a href="${s.homework_url}" target="_blank" style="color: #2ed573; font-weight: bold; text-decoration: none;">Відкрити роботу</a>`
+                : `<span style="color: #ff4757;">Не здано</span>`;
+
             html += `<tr>
                 <td><strong>${s.full_name}</strong></td>
                 <td><label class="checkbox-label"><input type="checkbox" id="present_${s.student_id}" ${s.is_present ? 'checked' : ''}> Був(ла)</label></td>
                 <td><input type="number" id="logikas_${s.student_id}" class="number-input" value="${s.earned_logikas || 0}"></td>
-                <td><button class="btn-primary small-btn" onclick="saveJournalRecord(${lessonId}, ${s.student_id})">Зберегти</button></td>
+                <td style="text-align: center;">${homeworkMarkup}</td> <td><button class="btn-primary small-btn" onclick="saveJournalRecord(${lessonId}, ${s.student_id})">Зберегти</button></td>
             </tr>`;
         });
         contentArea.innerHTML = html + `</tbody></table>`;
