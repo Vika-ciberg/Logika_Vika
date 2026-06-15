@@ -306,6 +306,27 @@ app.post('/api/students', (req, res) => {
     });
 });
 
+app.post('/api/teachers', (req, res) => {
+    const { full_name, login, password } = req.body;
+
+    if (!full_name || !login || !password) {
+        return res.status(400).json({ error: "Заповніть усі поля (ПІБ, логін та пароль)" });
+    }
+
+    const sql = `
+        INSERT INTO users (full_name, role, login, password_hash) 
+        VALUES (?, 'teacher', ?, ?)
+    `;
+
+    db.query(sql, [full_name, login, password], (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: "Помилка бази даних при створенні викладача" });
+        }
+        res.json({ success: true, message: "✅ Викладача успішно додано в систему!" });
+    });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Сервер запущено на порту ${PORT}`);
