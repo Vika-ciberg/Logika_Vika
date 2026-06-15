@@ -13,6 +13,7 @@
         <button id="btn-students" class="active" onclick="switchTab('students')">Учні</button>
         <button id="btn-groups" onclick="switchTab('groups')">Групи</button>
         <button id="btn-schedule" onclick="switchTab('schedule')">Розклад</button>
+        <button onclick="openAddTeacherModal()">+ Додати викладача</button>
         <button id="btn-tasks" onclick="switchTab('tasks')">Задачник</button>
         <button id="btn-curriculum" onclick="switchTab('curriculum')">Програма курсів</button>
         <button class="logout-btn" onclick="logout()">Вийти з системи</button>
@@ -104,6 +105,25 @@
         </div>
     </div>
     
+    <div id="addTeacherModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeAddTeacherModal()">&times;</span>
+            <h3>Додати нового викладача</h3>
+            <form id="addTeacherForm">
+                <label for="teacherName">ПІБ викладача:</label>
+                <input type="text" id="teacherName" required minlength="4" maxlength="25" placeholder="Наприклад: Шевченко Т. Г.">
+                
+                <label for="teacherLogin">Логін для входу:</label>
+                <input type="text" id="teacherLogin" required placeholder="Наприклад: tshevchenko">
+                
+                <label for="teacherPassword">Пароль:</label>
+                <input type="password" id="teacherPassword" required placeholder="Мінімум 4 символи">
+                
+                <button type="submit" class="btn-submit">Зберегти викладача</button>
+            </form>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/uk.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
