@@ -26,7 +26,7 @@ app.get('/api/students', (req, res) => {
         SELECT s.*, g.group_name,
                (COALESCE(s.total_logikas, 0) + COALESCE((SELECT SUM(earned_logikas) FROM journal WHERE student_id = s.id), 0)) AS calculated_logikas
         FROM students s
-        LEFT JOIN groups g ON s.group_id = g.id
+        LEFT JOIN st_groups g ON s.group_id = g.id
     `;
     db.query(sql, (err, results) => {
         if (err) return res.status(500).json({ error: "Помилка сервера при отриманні студентів" });
@@ -40,9 +40,9 @@ app.get('/api/schedule', (req, res) => {
     
     db.query(autoUpdateSql, (err) => {
         let sql = `
-            SELECT schedule.*, groups.group_name 
+            SELECT schedule.*, st_groups.group_name 
             FROM schedule 
-            LEFT JOIN groups ON schedule.group_id = groups.id
+            LEFT JOIN st_groups ON schedule.group_id = st_groups.id
         `;
         let queryParams = [];
 
@@ -99,7 +99,7 @@ app.post('/api/groups', (req, res) => {
     const { group_name, course_id, teacher_id } = req.body;
     if (!group_name) return res.status(400).json({ error: "Вкажіть назву групи" });
 
-    const sql = "INSERT INTO groups (group_name, course_id, teacher_id) VALUES (?, ?, ?)";
+    const sql = "INSERT INTO st_groups (group_name, course_id, teacher_id) VALUES (?, ?, ?)";
     db.query(sql, [group_name, course_id || null, teacher_id || null], (err) => {
         if (err) return res.status(500).json({ error: "Помилка сервера" });
         res.json({ success: true, message: "Групу створено!" });
@@ -108,9 +108,9 @@ app.post('/api/groups', (req, res) => {
 
 app.get('/api/groups', (req, res) => {
     const sql = `
-        SELECT groups.*, users.full_name AS teacher_name 
-        FROM groups 
-        LEFT JOIN users ON groups.teacher_id = users.id
+        SELECT st_groups.*, users.full_name AS teacher_name 
+        FROM st_groups 
+        LEFT JOIN users ON st_groups.teacher_id = users.id
     `;
     db.query(sql, (err, results) => {
         if (err) return res.status(500).json({ error: "Помилка сервера" });
@@ -157,7 +157,7 @@ app.post('/api/schedule/generate', (req, res) => {
     const { group_id, start_date } = req.body;
     if (!group_id || !start_date) return res.status(400).json({ error: "Оберіть групу та дату" });
 
-    db.query("SELECT course_id FROM groups WHERE id = ?", [group_id], (err, groupResults) => {
+    db.query("SELECT course_id FROM st_groups WHERE id = ?", [group_id], (err, groupResults) => {
         if (err || groupResults.length === 0) return res.status(500).json({ error: "Помилка групи" });
         const courseId = groupResults[0].course_id;
         if (!courseId) return res.status(400).json({ error: "Курс не вказано!" });
@@ -203,7 +203,7 @@ app.get('/api/schedule/group/:group_id', (req, res) => {
 });
 
 app.put('/api/groups/:id', (req, res) => {
-    db.query("UPDATE groups SET teacher_id = ? WHERE id = ?", [req.body.teacher_id || null, req.params.id], (err) => {
+    db.query("UPDATE st_groups SET teacher_id = ? WHERE id = ?", [req.body.teacher_id || null, req.params.id], (err) => {
         if (err) return res.status(500).json({ error: "Помилка оновлення групи" });
         res.json({ success: true, message: "Викладача закріплено!" });
     });
@@ -241,7 +241,7 @@ app.get('/api/curriculum', (req, res) => {
         const sql = `
             SELECT cl.id, cl.course_id, cl.lesson_number, cl.topic, cl.presentation_url, cl.homework_task 
             FROM course_lessons cl 
-            JOIN groups g ON g.course_id = cl.course_id 
+            JOIN st_groups g ON g.course_id = cl.course_id 
             WHERE g.id = ? 
             ORDER BY cl.lesson_number ASC
         `;
