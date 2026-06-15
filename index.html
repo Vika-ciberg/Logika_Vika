@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logika Vika - Учні</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h2>Система Logika - Список учнів</h2>
+    <div id="students-container"></div>
+
+    <script>
+        async function loadStudents() {
+            try {
+                const response = await fetch('/api/students');
+                const students = await response.json();
+                const container = document.getElementById('students-container');
+
+                students.forEach(student => {
+                    const firstLetter = student.full_name.charAt(0);
+                    const card = document.createElement('div');
+                    card.className = 'student-card';
+                    card.innerHTML = `
+                        <div class="avatar">${firstLetter}</div>
+                        <div class="info">
+                            <div class="student-name">${student.full_name}</div>
+                            <div class="student-details">Вік: ${student.age} | Телефон: ${student.parent_phone}</div>
+                        </div>
+                        <div class="stats">
+                            <div>Логіки: <span class="coin">${student.logika_coins || 0}</span></div>
+                            <div>Залишок уроків: ${student.lessons_left || 0}</div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (error) {
+                document.getElementById('students-container').innerHTML = '<p>Не вдалося завантажити дані.</p>';
+            }
+        }
+
+        loadStudents();
+    </script>
+
+</body>
+</html>

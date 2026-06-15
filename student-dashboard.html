@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Особистий кабінет | Logika</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Logika Vika</h2>
+        <button id="btn-dashboard" class="active" onclick="switchTab('dashboard')">Мій кабінет</button>        
+        <button id="btn-curriculum" onclick="switchTab('curriculum')">Програма курсів</button>
+        <button class="logout-btn" onclick="logout()">Вийти з системи</button>
+    </div>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <div class="header-actions">
+                <h1 id="page-title">Особистий кабінет</h1>
+            </div>
+            <div class="user-info">
+                Привіт, <strong id="userName">Учень</strong>! 
+            </div>
+        </div>
+
+        <div id="content-area">
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <h3 class="stat-title">Мої Логіки</h3>
+                    <p id="studentLogikas" class="stat-value-green">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3 class="stat-title">Залишок занять</h3>
+                    <p id="studentLessons" class="stat-value-purple">0</p>
+                </div>
+            </div>
+
+            <div id="nearest-lesson-box" class="mb-25"></div>
+
+            <div class="mt-20">
+                <button id="toggleScheduleBtn" class="btn-secondary" onclick="toggleFullSchedule()">Розгорнути весь розклад</button>
+            </div>
+
+            <div id="full-schedule-container" class="hidden-container mt-20">
+                <h3 class="schedule-title">Усі заняття курсу</h3>
+                <div id="schedule-area">
+                    <p>Завантаження розкладу...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="student-dashboard.js"></script>
+</body>
+</html>

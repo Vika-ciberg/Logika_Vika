@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logika Vika</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body> 
+    <div class="sidebar">
+        <h2>Logika Vika</h2>
+        <button id="btn-students" class="active" onclick="switchTab('students')">Учні</button>
+        <button id="btn-groups" onclick="switchTab('groups')">Групи</button>
+        <button id="btn-schedule" onclick="switchTab('schedule')">Розклад</button>
+        <button id="btn-tasks" onclick="switchTab('tasks')">Задачник</button>
+        <button id="btn-curriculum" onclick="switchTab('curriculum')">Програма курсів</button>
+        <button class="logout-btn" onclick="logout()">Вийти з системи</button>
+    </div>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <div class="header-actions">
+                <h1 id="page-title">Контингент учнів</h1>
+            </div>
+            <div class="user-info">
+                Вітаємо, <strong id="userName">Користувач</strong>! 
+            </div>
+        </div>
+        <div id="content-area">
+            <p>Завантаження даних...</p>
+        </div>
+    </div>
+
+    <div id="addStudentModal" class="modal">
+        <div class="modal-content">
+            <h3>Реєстрація нового учня</h3>
+            <form id="addStudentForm">
+                <div class="input-group">
+                    <label for="studentName">ПІБ учня</label>
+                    <input type="text" id="studentName" required minlength="4" maxlength="25">
+                </div>
+                <div class="input-group">
+                    <label for="studentAge">Вік</label>
+                    <input type="number" id="studentAge" required min="7" max="18">
+                </div>
+                <div class="input-group">
+                    <label for="studentPhone">Телефон батьків</label>
+                    <input type="text" id="studentPhone" required>
+                </div>
+                <div class="input-group">
+                    <label for="studentGroupId">ID Групи</label>
+                    <input type="number" id="studentGroupId">
+                </div>
+                <div class="btn-actions">
+                    <button type="button" class="btn-secondary" onclick="closeAddStudentModal()">Скасувати</button>
+                    <button type="submit" class="btn-primary">Зберегти</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="addGroupModal" class="modal">
+        <div class="modal-content">
+            <h3>Створення нової групи</h3>
+            <form id="addGroupForm">
+                <div class="input-group">
+                    <label for="groupName">Назва групи</label>
+                    <input type="text" id="groupName" required>
+                </div>
+                <div class="input-group">
+                    <label for="groupCourseId">ID Курсу</label>
+                    <input type="number" id="groupCourseId">
+                </div>
+                <div class="input-group">
+                    <label for="groupTeacherId">ID Викладача</label>
+                    <input type="number" id="groupTeacherId">
+                </div>
+                <div class="btn-actions">
+                    <button type="button" class="btn-secondary" onclick="closeAddGroupModal()">Скасувати</button>
+                    <button type="submit" class="btn-primary">Створити</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="generateScheduleModal" class="modal">
+        <div class="modal-content">
+            <h3>Запуск групи (Авто-розклад)</h3>
+            <form id="generateScheduleForm">
+                <div class="input-group">
+                    <label for="genGroupId">ID Групи</label>
+                    <input type="number" id="genGroupId" required>
+                </div>
+                <div class="input-group">
+                    <label for="genStartDate">Дата та час першого заняття</label>
+                    <input type="datetime-local" id="genStartDate" required>
+                </div>
+                <div class="btn-actions">
+                    <button type="button" class="btn-secondary" onclick="closeGenerateModal()">Скасувати</button>
+                    <button type="submit" class="btn-primary">Згенерувати</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/uk.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>
