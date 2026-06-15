@@ -257,3 +257,8 @@ body {
 h1, h2, h3, a, strong {
     color: #000000;
 }
+
+.input-group input::placeholder {
+    color: #b0b0b0;
+    font-size: 0.9em;
+}
