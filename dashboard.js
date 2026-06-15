@@ -656,4 +656,76 @@ async function loadTeachersTable() {
     }
 }
 
+function renderStudentTable(studentsList) {
+    const contentArea = document.getElementById('content-area');
+    let html = `
+        <div class="action-bar">
+            <div class="action-bar-left">
+                ${user.role === 'manager' ? '<button class="btn-primary" onclick="openAddStudentModal()">+ Додати учня</button>' : ''}
+                <button class="btn-secondary" onclick="exportToExcel('Учні.xlsx')">Експорт</button>
+            </div>
+            <div class="search-wrapper">
+                <input type="text" id="studentSearchInput" class="search-input" placeholder="Швидкий пошук за ПІБ..." oninput="filterStudents(this.value)">
+            </div>
+        </div>
+    `;
+
+    if (studentsList.length === 0) {
+        contentArea.innerHTML = html + '<p>Нічого не знайдено.</p>';
+        return;
+    }
+
+    // Додали нову колонку "Доступ (Логін / Пароль)" в заголовок таблиці
+    html += `
+        <table class="data-table" id="exportData">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>ПІБ учня</th>
+                    <th>Вік</th>
+                    <th>Телефон</th>
+                    <th>Група</th>
+                    <th>Доступ (Логін / Пароль)</th>
+                    <th>Дії</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    studentsList.forEach(student => {
+        const groupDisplay = student.group_name ? `Група: ${student.group_name}` : '<span class="error-text">Без групи</span>';
+        const actionBtn = user.role === 'manager' 
+            ? `<button class="btn-secondary small-btn" onclick="assignGroupToStudent(${student.id})">Змінити групу</button>` 
+            : `<span class="readonly-text">Тільки перегляд</span>`;
+
+        // Безпечний вивід, якщо раптом у когось немає логіна або пароля в базі
+        const login = student.login || '—';
+        const password = student.password || '—';
+
+        // Формуємо інтерактивний блок для пароля за допомогою CSS-стилів прямо в коді
+        html += `
+            <tr>
+                <td>${student.id}</td>
+                <td><strong>${student.full_name}</strong></td>
+                <td>${student.age}</td>
+                <td>${student.parent_phone}</td>
+                <td>${groupDisplay}</td>
+                <td>
+                    <div style="font-size: 0.9em; line-height: 1.4;">
+                        <div><span style="color: gray;">Логін:</span> <code>${login}</code></div>
+                        <div class="password-hover-zone" style="cursor: pointer;">
+                            <span style="color: gray;">Пароль:</span> 
+                            <span class="stars" style="font-family: monospace; font-weight: bold; letter-spacing: 2px;">••••••</span>
+                            <span class="real-password" style="display: none; font-family: monospace; font-weight: bold; color: #2e7d32;">${password}</span>
+                        </div>
+                    </div>
+                </td>
+                <td>${actionBtn}</td>
+            </tr>
+        `;
+    });
+
+    contentArea.innerHTML = html + `</tbody></table>`;
+}
+
 loadStudents();
