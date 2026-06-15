@@ -323,7 +323,20 @@ app.post('/api/teachers', (req, res) => {
             console.error(err);
             return res.status(500).json({ error: "Помилка бази даних при створенні викладача" });
         }
-        res.json({ success: true, message: "✅ Викладача успішно додано в систему!" });
+        res.json({ success: true, message: "Викладача успішно додано в систему!" });
+    });
+});
+
+// Отримання списку всіх викладачів
+app.get('/api/teachers', (req, res) => {
+    const sql = "SELECT id, full_name, login FROM users WHERE role = 'teacher'";
+    
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: "Помилка при отриманні списку викладачів" });
+        }
+        res.json(results);
     });
 });
 
