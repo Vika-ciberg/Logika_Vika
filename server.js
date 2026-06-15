@@ -118,9 +118,10 @@ app.get('/api/groups', (req, res) => {
     });
 });
 
+// 1. Отримання журналу для конкретного уроку (вікно оцінювання)
 app.get('/api/journal/:lesson_id', (req, res) => {
     const sql = `
-        SELECT s.id AS student_id, s.full_name, j.is_present, j.earned_logikas
+        SELECT s.id AS student_id, s.full_name, j.is_present, j.earned_logikas, j.homework_url
         FROM schedule sch
         JOIN students s ON sch.group_id = s.group_id
         LEFT JOIN journal j ON s.id = j.student_id AND j.lesson_id = sch.id
@@ -133,19 +134,23 @@ app.get('/api/journal/:lesson_id', (req, res) => {
 });
 
 app.post('/api/journal', (req, res) => {
-    const { lesson_id, student_id, is_present, earned_logikas } = req.body;
+    // Додали homework_url у прийом даних від клієнта
+    const { lesson_id, student_id, is_present, earned_logikas, homework_url } = req.body;
+    
     db.query("SELECT id FROM journal WHERE lesson_id = ? AND student_id = ?", [lesson_id, student_id], (err, results) => {
         if (err) return res.status(500).json({ error: "Помилка БД" });
 
         if (results.length > 0) {
-            db.query("UPDATE journal SET is_present = ?, earned_logikas = ? WHERE lesson_id = ? AND student_id = ?", 
-            [is_present, earned_logikas, lesson_id, student_id], (err) => {
+            // Якщо запис уже є — оновлюємо (і присутність, і бали, і посилання на ДЗ)
+            db.query("UPDATE journal SET is_present = ?, earned_logikas = ?, homework_url = COALESCE(?, homework_url) WHERE lesson_id = ? AND student_id = ?", 
+            [is_present, earned_logikas, homework_url, lesson_id, student_id], (err) => {
                 if (err) return res.status(500).json({ error: "Помилка оновлення" });
                 res.json({ success: true, message: "Оновлено!" });
             });
         } else {
-            db.query("INSERT INTO journal (lesson_id, student_id, is_present, earned_logikas) VALUES (?, ?, ?, ?)", 
-            [lesson_id, student_id, is_present, earned_logikas], (err) => {
+            // Якщо запису немає — створюємо новий
+            db.query("INSERT INTO journal (lesson_id, student_id, is_present, earned_logikas, homework_url) VALUES (?, ?, ?, ?, ?)", 
+            [lesson_id, student_id, is_present || 0, earned_logikas || 0, homework_url || null], (err) => {
                 if (err) return res.status(500).json({ error: "Помилка збереження" });
                 res.json({ success: true, message: "Збережено!" });
             });
@@ -301,7 +306,7 @@ app.post('/api/students', (req, res) => {
         // Повертаємо повідомлення з новими даними
         res.json({ 
             success: true, 
-            message: `✅ Учня успішно створено!\n\nДані для входу:\nЛогін: ${generatedLogin}\nПароль: ${generatedPassword}` 
+            message: `Учня успішно створено!\n\nДані для входу:\nЛогін: ${generatedLogin}\nПароль: ${generatedPassword}` 
         });
     });
 });
