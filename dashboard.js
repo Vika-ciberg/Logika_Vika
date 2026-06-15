@@ -8,16 +8,24 @@ let allStudents = [];
 let allGroups = [];
 let allLessonsSchedule = [];
 
+// КЕРУВАННЯ ВКЛАДКАМИ
 function switchTab(tabName) {
-    const tabs = ['students', 'groups', 'schedule', 'tasks', 'curriculum'];
-    tabs.forEach(t => document.getElementById(`btn-${t}`).classList.remove('active'));
-    document.getElementById(`btn-${tabName}`).classList.add('active');
+    // Додали 'teachers' у загальний список, щоб активність кнопок скидалася правильно
+    const tabs = ['students', 'groups', 'schedule', 'tasks', 'curriculum', 'teachers'];
+    tabs.forEach(t => {
+        const btn = document.getElementById(`btn-${t}`);
+        if (btn) btn.classList.remove('active');
+    });
+    
+    const activeBtn = document.getElementById(`btn-${tabName}`);
+    if (activeBtn) activeBtn.classList.add('active');
 
     if (tabName === 'students') loadStudents();
     if (tabName === 'groups') loadGroups();
     if (tabName === 'schedule') loadSchedule();
     if (tabName === 'tasks') loadTasks();
     if (tabName === 'curriculum') loadCurriculum();
+    if (tabName === 'teachers') loadTeachersTable(); // Пряме підключення викладачів
 }
 
 function logout() {
@@ -25,6 +33,9 @@ function logout() {
     window.location.href = 'login.html';
 }
 
+// ==========================================
+// БЛОК: УЧНІ
+// ==========================================
 async function loadStudents() {
     document.getElementById('page-title').innerText = 'Контингент учнів';
     const contentArea = document.getElementById('content-area');
@@ -114,15 +125,12 @@ function closeAddStudentModal() { modalStudent.style.display = 'none'; document.
 
 document.getElementById('addStudentForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    
     const fullNameInput = document.getElementById('studentName').value.trim();
-    
-    // Регулярний вираз: літери (укр + англ), пробіли, апостроф. Від 4 до 25 символів.
     const nameRegex = /^[a-zA-Zа-яА-ЯіІїЇєЄґҐ' ]{4,25}$/;
     
     if (!nameRegex.test(fullNameInput)) {
-        alert("Помилка: ПІБ має містити від 4 до 25 символів і складатися лише з літер (без цифр та спецсимволів типу @, -, _).");
-        return; // Зупиняємо виконання, дані не відправляються на сервер
+        alert("Помилка: ПІБ має містити від 4 до 25 symbols і складатися лише з літер.");
+        return;
     }
 
     const newStudent = {
@@ -138,9 +146,7 @@ document.getElementById('addStudentForm').addEventListener('submit', async (e) =
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(newStudent)
         });
-        
         const result = await response.json(); 
-        
         if (response.ok) {
             closeAddStudentModal();
             loadStudents();
@@ -151,6 +157,9 @@ document.getElementById('addStudentForm').addEventListener('submit', async (e) =
     } catch (error) { alert('Помилка підключення'); }
 });
 
+// ==========================================
+// БЛОК: ГРУПИ ТА ЖУРНАЛ
+// ==========================================
 async function loadGroups() {
     document.getElementById('page-title').innerText = 'Навчальні групи';
     const contentArea = document.getElementById('content-area');
@@ -307,10 +316,12 @@ async function toggleAttendanceSquare(element, lessonId, studentId, currentStatu
     } catch (error) { alert("Помилка збереження"); }
 }
 
+// ==========================================
+// БЛОК: РОЗКЛАД ТА ЗАВДАННЯ
+// ==========================================
 function applyScheduleFilter() {
     const dates = document.getElementById('dateRangePicker')._flatpickr.selectedDates;
     if (dates.length < 2) return alert("Оберіть період!");
-    
     const format = d => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0];
     loadSchedule(format(dates[0]), format(dates[1]));
 }
@@ -538,87 +549,111 @@ async function loadCurriculum() {
 }
 
 // ==========================================
-// СТВОРЕННЯ НОВОЇ ГРУПИ
+// БЛОК: ФОРМА СТВОРЕННЯ НОВОЇ ГРУПИ
 // ==========================================
 const modalGroup = document.getElementById('addGroupModal');
-
-window.openAddGroupModal = function() { 
-    modalGroup.style.display = 'flex'; 
-};
-
-window.closeAddGroupModal = function() { 
-    modalGroup.style.display = 'none'; 
-    document.getElementById('addGroupForm').reset(); 
-};
+window.openAddGroupModal = function() { modalGroup.style.display = 'flex'; };
+window.closeAddGroupModal = function() { modalGroup.style.display = 'none'; document.getElementById('addGroupForm').reset(); };
 
 document.getElementById('addGroupForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    
     const newGroup = {
         group_name: document.getElementById('groupName').value,
         course_id: document.getElementById('groupCourseId').value || null,
         teacher_id: document.getElementById('groupTeacherId').value || null
     };
-    
     try {
         const response = await fetch('/api/groups', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(newGroup)
         });
-        
         if (response.ok) {
-            closeAddGroupModal(); // Закриваємо вікно
-            loadGroups(); // Оновлюємо таблицю груп на екрані
+            closeAddGroupModal();
+            loadGroups();
         } else {
             alert('Помилка: ' + (await response.json()).error);
         }
-    } catch (error) { 
-        alert('Помилка підключення до сервера'); 
-    }
+    } catch (error) { alert('Помилка підключення до сервера'); }
 });
 
+// ==========================================
+// БЛОК: ВИКЛАДАЧІ (НОВИЙ ФУНКЦІОНАЛ)
+// ==========================================
 const modalTeacher = document.getElementById('addTeacherModal');
+window.openAddTeacherModal = function() { modalTeacher.style.display = 'flex'; };
+window.closeAddTeacherModal = function() { modalTeacher.style.display = 'none'; document.getElementById('addTeacherForm').reset(); };
 
-window.openAddTeacherModal = function() { 
-    modalTeacher.style.display = 'flex'; 
-};
-
-window.closeAddTeacherModal = function() { 
-    modalTeacher.style.display = 'none'; 
-    document.getElementById('addTeacherForm').reset(); 
-};
-
-// Відправка даних нової форми на сервер
 document.getElementById('addTeacherForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    
     const newTeacher = {
         full_name: document.getElementById('teacherName').value.trim(),
         login: document.getElementById('teacherLogin').value.trim(),
         password: document.getElementById('teacherPassword').value
     };
-    
     try {
         const response = await fetch('/api/teachers', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(newTeacher)
         });
-        
         const result = await response.json();
-        
         if (response.ok) {
             closeAddTeacherModal();
             alert(result.message);
-            // Якщо на сторінці є функція оновлення списку викладачів у випадаючих списках, викликаємо її:
-            if (typeof loadTeachersToSelect === 'function') loadTeachersToSelect();
+            loadTeachersTable(); // Оновлюємо таблицю викладачів відразу на екрані
         } else {
             alert('Помилка: ' + result.error);
         }
-    } catch (error) { 
-        alert('Помилка підключення до сервера'); 
-    }
+    } catch (error) { alert('Помилка підключення до сервера'); }
 });
+
+// Динамічне завантаження штату викладачів у "content-area"
+async function loadTeachersTable() {
+    document.getElementById('page-title').innerText = 'Штат викладачів';
+    const contentArea = document.getElementById('content-area');
+    contentArea.innerHTML = '<p>Завантаження...</p>';
+
+    try {
+        const response = await fetch('/api/teachers');
+        if (!response.ok) throw new Error('Помилка завантаження');
+        const teachers = await response.json();
+
+        let html = `
+            <div class="action-bar">
+                <div class="action-bar-left">
+                    ${user.role === 'manager' ? '<button class="btn-primary" onclick="openAddTeacherModal()">+ Додати викладача</button>' : ''}
+                </div>
+            </div>
+        `;
+
+        if (teachers.length === 0) {
+            contentArea.innerHTML = html + '<p>Жодного викладача ще не додано.</p>';
+            return;
+        }
+
+        html += `
+            <table class="data-table">
+                <thead>
+                    <tr><th>ID</th><th>ПІБ викладача</th><th>Логін в системі</th></tr>
+                </thead>
+                <tbody>
+        `;
+
+        teachers.forEach(teacher => {
+            html += `
+                <tr>
+                    <td>${teacher.id}</td>
+                    <td><strong>${teacher.full_name}</strong></td>
+                    <td>${teacher.login}</td>
+                </tr>
+            `;
+        });
+
+        contentArea.innerHTML = html + `</tbody></table>`;
+    } catch (error) {
+        contentArea.innerHTML = '<p class="error-text">Помилка завантаження даних викладачів.</p>';
+    }
+}
 
 loadStudents();
