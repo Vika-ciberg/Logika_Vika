@@ -139,13 +139,85 @@ window.showModule = function(modNum, modules) {
                 <p class="lesson-topic">${l.topic}</p>
                 <div class="task-circles-container">
                     ${tasks.length > 0 
-                        ? tasks.map((link, i) => `<div class="circle" onclick="window.open('${link.trim()}', '_blank')">${i + 1}</div>`).join('')
+                        ? tasks.map((link, i) => {
+                            // Екрануємо лапки в темах, щоб JS не ругався
+                            const safeTopic = l.topic.replace(/'/g, "\\'").replace(/"/g, '\\"');
+                            // Тепер при кліку на кружечок відкривається наше модальне вікно
+                            return `<div class="circle" onclick="openHomeworkModal(${l.id}, '${safeTopic}', '${link.trim()}')">${i + 1}</div>`;
+                        }).join('')
                         : `<span class="readonly-text">Завдань немає</span>`
                     }
                 </div>
             </div>
         `;
     }).join('');
+}
+
+// ФУНКЦІЇ ДЛЯ МОДАЛЬНОГО ВІКНА ЗДАЧІ ДЗ
+window.openHomeworkModal = function(lessonId, topic, taskLink) {
+    const modal = document.getElementById('submitHomeworkModal');
+    document.getElementById('modalLessonTopic').innerText = topic;
+    document.getElementById('modalTaskLink').href = taskLink;
+    
+    // Скидаємо поля та статуси перед відкриттям
+    document.getElementById('studentHomeworkUrl').value = '';
+    document.getElementById('studentHomeworkUrl').style.borderColor = '#ced6e0';
+    const statusText = document.getElementById('submissionStatus');
+    statusText.style.display = 'none';
+
+    // Налаштовуємо кнопку відправки на роботу з конкретним ID уроку
+    const submitBtn = document.getElementById('submitHomeworkBtn');
+    submitBtn.onclick = () => submitHomework(lessonId);
+
+    modal.style.display = 'flex';
+}
+
+window.closeHomeworkModal = function() {
+    document.getElementById('submitHomeworkModal').style.display = 'none';
+}
+
+async function submitHomework(lessonId) {
+    const homeworkUrlInput = document.getElementById('studentHomeworkUrl');
+    const statusText = document.getElementById('submissionStatus');
+    const url = homeworkUrlInput.value.trim();
+
+    if (!url || !url.startsWith('http')) {
+        alert("Будь ласка, вкажіть правильне посилання (починаючи з http:// або https://)");
+        return;
+    }
+
+    const data = {
+        lesson_id: lessonId,
+        student_id: user.id, // ID учня з localStorage
+        homework_url: url,
+        is_present: 1 // Автоматично ставимо, що учень працював
+    };
+
+    try {
+        statusText.style.display = 'block';
+        statusText.style.color = '#8c7ae6';
+        statusText.innerText = 'Надсилання роботи викладачу...';
+
+        const response = await fetch('/api/journal', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            statusText.style.color = '#2ed573';
+            statusText.innerText = 'Роботу успішно здано вчителю!';
+            homeworkUrlInput.style.borderColor = '#2ed573';
+        } else {
+            statusText.style.color = '#ff4757';
+            statusText.innerText = 'Помилка: ' + result.error;
+        }
+    } catch (error) {
+        statusText.style.color = '#ff4757';
+        statusText.innerText = 'Помилка з\'єднання з сервером';
+    }
 }
 
 // Запуск при завантаженні
